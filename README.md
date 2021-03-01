@@ -1,4 +1,5 @@
-**Android RAT Android Server** projesi. PHP web panel de resimde gördüğünüz kontroller mevcuttur. 
+**Android RAT** </br>
+Başlatmış olduğum RAT projemin **android Server** projesinin kaynak kodlarına sizde erişebilirsiniz. PHP web panel de resimde gördüğünüz kontroller mevcuttur. 
 Android projesini de şu adresten indirebilirsiniz
 [https://github.com/sulanmehmetsirin/Raptor](https://github.com/sulanmehmetsirin/RaptorWebPanel)
 
