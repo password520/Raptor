@@ -19,11 +19,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <permission-group
-        android:name="android.permission-group.LOCATION"
-        android:label="@string/permission_title"
-        android:description="@string/permission_desc" />
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -53,7 +48,6 @@
 
         <service
             android:name=".InternalService"
-            android:enabled="true"
             android:exported="true"/>
     </application>
 

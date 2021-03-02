@@ -2,8 +2,8 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '29.0.3'
+    compileSdkVersion 'android-S'
+    buildToolsVersion '30.0.0'
     defaultConfig {
         applicationId "com.velociraptor.raptor"
         minSdkVersion 18
